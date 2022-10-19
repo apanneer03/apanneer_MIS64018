@@ -1,0 +1,152 @@
+---
+title: "Assignment 3"
+author: "Abi"
+date: "2022-10-15"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+$$
+\text{The objective function is }Min\hspace{.3cm} Tc= 622x_{11}+614x_{12}+630x_{13} + 641x_{21}+645x_{22}+649x_{23}
+$$
+Supply Costraints:
+$$
+x_{11}+x_{12}+x_{13} \le 100 \\
+x_{21}+x_{22}+x_{23} \le 120 
+$$
+Demand Constraint:
+$$
+x_{11}+x_{21} \ge 80 \\
+x_{12}+x_{22} \ge 60 \\
+x_{13}+x_{23} \ge 70 
+$$
+Non-Negative:
+$$
+x_{i,j} \ge 0
+$$
+```{r}
+library(lpSolve)
+```
+
+```{r}
+Problem <- matrix(c(22,14,30,600,100,
+                16,20,24,625,120,
+                80,60,70,"-","-"),ncol = 5,byrow = TRUE)
+colnames(Problem)<- c("Warehouse1","Warehouse2","Warehouse3","Production Cost","Production Capacity")
+rownames(Problem)<-c("Plant A","Plant B","Monthly Demand")
+Problem <-as.table(Problem)
+Problem
+```
+```{r}
+# Since production and demand is unbalanced, Dummy column is created
+
+# Name of the column and rows:
+costs <- matrix(c(622,614,630,0,
+                  641,645,649,0),ncol = 4,byrow = TRUE)
+colnames(costs)<- c("Warehouse1","Warehouse2","Warehouse3","Dummy")
+rownames(costs)<-c("Plant A","Plant B")
+costs <-as.table(costs)
+costs
+
+# Setting up the row signs and production capacity values
+row.signs <- rep("<=",2)
+row.rhs<- c(100,120)
+
+# Setting up the column sign and demand values
+col.signs <- rep(">=",4)
+col.rhs <- c(80,60,70,10)
+```
+
+```{r}
+# Running lptrans to find minimum cost
+
+lptrans <- lp.transport(costs,"min",row.signs,row.rhs,col.signs,col.rhs)
+
+# Values of all variables
+lptrans$solution
+```
+
+```{r}
+# Objective function 
+lptrans$objval
+
+```
+# Therefore 
+
+# x12 = 60
+
+# x13 = 40
+
+# x21 = 80
+
+# x23 = 30
+
+# Objective function is 132790.
+
+2) Dual Problem:
+
+Formulating the dual constraints and variables
+$$
+\text{The objective function is }Max\hspace{.3cm} VA= 80w_{1}+60w_{2}+70w_{3}-100p_{1}-120p_{2}
+$$
+$$
+\text{Where,}\hspace{.3cm}w_{1}\text{= Price received at the Warehouse 1}
+$$
+$$
+w_{2}\text{= Price, received at the Warehouse 2}
+$$
+$$
+w_{3}\text{= Price, received at the Warehouse 3}
+$$
+$$
+p_{1}\text{= Price, purchased at the Plant A}
+$$
+$$
+p_{2}\text{= Price, purchased at the Plant B}
+$$
+Subject to:
+$$w_{1}-p_{1} \ge 622$$
+$$w_{2}-p_{1} \ge 614$$
+$$w_{3}-p_{1} \ge 630$$
+$$w_{1}-p_{2} \ge 641$$
+$$w_{2}-p_{2} \ge 645$$
+$$w_{3}-p_{2} \ge 649
+$$
+3) Economic Interpretation of dual:
+
+ The goal of AED's business is to reduce the total cost of production and shipment.
+
+ To achieve this, the corporation needs hire a logistic company to handle the transportation, which will include purchasing the AEDs and transporting them to various warehouses in an effort to reduce the overall cost of production and shipping.
+
+$$
+\text{The constraints in the dual can be modified as}$$
+$$w_{1} \ge 622+p_{1}$$
+$$w_{2} \ge 614+p_{1}$$
+$$w_{3} \ge 630+p_{1}$$
+$$w_{1} \ge 641+p_{2}$$
+$$w_{2} \ge 645+p_{2}$$
+$$w_{3} \ge 649+p_{2}
+$$
+$$ \text{From the above we get to see that}\hspace{.3cm} w_{1}−p_{1}\ge 622$$
+$$ \text{That can be exponented as}\hspace{.3cm} w_{1} \ge 622+p_{1}$$
+$$ \text{Here}\hspace{.3cm} w_{1}\hspace{.3cm}\text{is considered as the price payments being received at the origin which is nothing else,but the revenue,whereas}\hspace{.3cm} p_{1}+622\hspace{.3cm}\text{is the money paid at the origin at PlantA}
+$$
+$$\text{This can be formulated as below}\\
+MR \ge MC
+$$
+
+$$
+\text{If MR < MC, in order to meet the Marginal Revenue (MR), we need to decrease the costs at the plants.}$$
+$$\text{If MR > MC, in order to meet the Marginal Revenue (MR), we need to increase the production supply.}$$
+$$\text{For a profit maximization, The Marginal Revenue(MR) should be equal to MarginalCosts(MC)}$$
+$$\text{Therefore, MR=MC}$$
+$$\text{Based on above interpretation, we can conclude that,profit maximization takes place if MC is equal to MR.}
+$$
+
+
