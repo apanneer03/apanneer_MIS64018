@@ -1,0 +1,66 @@
+---
+title: "Assignment 5"
+author: "Abi"
+date: "2022-11-05"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Problem Descripiton
+  
+Three new goods from the Emax Corporation need to be chosen as the combination to be released. The company's total profit, worker stability, and seeking an increase in overall earnings from the $75 million realized this year are given top priority. We are required to resolve the following linear programming model in particular:
+Maximize $Z = P - 6C - 3D$, where  
+$P$ = total (discounted) profit over the life of the new products,  
+$C$ = change (in either direction) in the current level of employment, and  
+$D$ = decrease in next year's earnings from the current year's.
+
+# Loading required package
+```{r}
+library(lpSolve)
+library(lpSolveAPI)
+```
+Defining y1p and y1m as the amount over (if any) and the amount under (if any) the employment level goal.
+
+Defining y2p and y2m in the same way for the goal regarding earnings next year.
+
+Define x1, x2 and x3 as the production rates of Products 1, 2, and 3, respectively.
+
+Also expressing P in terms of x1, x2 and x3 and the objective function in terms of x1, x2, x3, y1p, y1m , y2p and y2m
+
+```{r}
+# The file "x.lp" contains a representation of the model mentioned above.
+Emax <- read.lp("x.lp")
+# Solving the model
+solve(Emax)
+Emax
+```
+
+The following table illustrates the effects of each of the new goods (per unit rate of production) on each of these factors:
+```{r}
+Emax_table <- matrix(c("Total Profit", "Employment Level", "Earnings Next Year",
+                       20,6,8,
+                       15,4,7,
+                       25,5,5,
+                       "Maximize","=50",">=75",
+                       "Millions of Dollars", "Hundreds of Employees", "Millions of Dollars"), ncol=6, byrow = F)
+colnames(Emax_table) <- c("Factor","Product 1", "Product 2", "Product 3", "Goal", "Units")
+as.table(Emax_table)
+```
+
+To get the objective function's maximum value and the values of the decision variables, we utilize the 'get.objective' and 'get.variables' functions. The decision variables $x j$ are represented by the first three variables in the "x.lp" model.
+```{r}
+# Finding the objective function and values of the variables
+solve(Emax)
+get.objective(Emax)
+get.variables(Emax)
+```
+## INTERPRETATION:
+## 1. The units of combination that the company must use in order to optimize the goal function are X1, X2, and X3. 20 units of Product 1 and 15 units of Product 2 cannot be manufactured because the resultant solution was "0," according to the codes X1 for Product 1, X2 for Product 2, and X3 for Product 3. However, X3 has changed, meaning that the company can only make 15 units of Product 3—the only product—in order to increase profit.
+## 2. The intention was to stabilize employment levels with a cap of 50 hundred employees as the maximum, but in this situation, the firm had 25 hundred extra employees (y1p), for which they would have to pay a penalty for the excess/rise in the employee count.
+## 3. The aim of y2p and y2m was to capture the increase or decrease in the earnings of the following year from the current level, which in this case states as "0," indicating that there is no increase or decrease in the earnings of the following year when compared to those of the current year. As a result, the earnings for the following year are unchanged.
+## 4. The objective function value, in this example 225 million dollars, calls out the profit that the corporation is optimizing.
