@@ -1,0 +1,82 @@
+---
+title: "Integer Programming"
+author: "Abi"
+date: "2022-11-20"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*AP is a shipping service that guarantees overnight delivery of packages in the continental US. The company has various hubs at major cities and airports across the country. Packages are received at hubs, and then shipped to intermediate hubs or to their final destination.*\vspace{2mm}
+\newline
+*The manager of the AP hub in Cleveland is concerned about labor costs, and is interested in determining the most effective way to schedule workers. The hub operates seven days a week, and the number of packages it handles varies from one day to another.*\vspace{1mm}
+\newline
+
+## Formulating LP Model
+The problem can be expressed in the following LP model:  
+
+$\textbf{MIN } Z = 775x_1 + 800x_2 + 800x_3 + 800x_4 + 800x_5 + 775x_6 + 750x_7$ 
+\newline 
+
+*subject to* 
+\newline 
+
+$x_2 + x_3 + x_4 + x_5 + x_6 \geq 18$,  
+$x_3 + x_4 + x_5 + x_6 + x_7 \geq 27$,  
+$x_1 + x_4 + x_5 + x_6 + x_7 \geq 22$,  
+$x_1 + x_2 + x_5 + x_6 + x_7 \geq 26$,  
+$x_1 + x_2 + x_3 + x_6 + x_7 \geq 25$,  
+$x_1 + x_2 + x_3 + x_4 + x_7 \geq 21$,  
+$x_1 + x_2 + x_3 + x_4 + x_5 \geq 19$,  
+for non-negative integers $x_i$.  
+
+Here, Z is the weekly salary costs, and $x_i$ is the number of employees planned for shift i. The constraints are in place to make sure that each day of the week has adequate personnel planned.
+\newline 
+
+*Loading the lpSolveAPI Package*
+```{r}
+library("lpSolveAPI")
+```
+
+*Loading the lp file*
+The model is formulated in the file `AP.lp`.
+```{r}
+AP <- read.lp("AP.lp")
+print(AP)
+```
+
+*The number of employees required on each day of the week is estimated in the table below.*
+```{r}
+EachDay_Workers <- matrix(c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday",
+18,27,22,26,25,21,19),ncol=2,byrow = F)
+colnames(EachDay_Workers) <- c("Day of the week", "Workers Required")
+as.table(EachDay_Workers)
+```
+*At AP, package handlers are promised a five-day workweek with two straight days off. The handlers make a weekly base salary of $750. Those who work on Saturday or Sunday are compensated with an extra $25 per day. The following are potential shifts and pay rates for package handlers:*
+```{r}
+off_wages <- matrix(c(1,2,3,4,5,6,7,
+                               "Sunday and Monday","Monday and Tuesday","Tuesday and Wednesday","Wednesday and Thursday","Thursday and Friday","Friday and Saturday","Saturday and Sunday",
+                               "$775","$800","$800","$800","$800","$775","$750"),ncol=3,byrow=F)
+colnames(off_wages) <- c("Shift", "Days_Off", "Wage")
+as.table(off_wages)
+```
+*Running the lp model*
+```{r}
+solve(AP)
+```
+*We may determine that there is a model by getting 0 as the value.*\vspace{3mm}
+\newline 
+
+*The `get.objective` and `get.variables` functions can be used to find the objective function (total weekly wage expenses) and number of workers to work on each shift under the optimal solution.*
+```{r}
+get.objective(AP)
+```
+*The entire cost to the company in order to guarantee that total wage expenses are kept to a minimum and that there are enough workers available each day to work is "$25,675".*
+```{r}
+get.variables(AP)
+```
